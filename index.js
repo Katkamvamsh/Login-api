@@ -14,10 +14,10 @@ app.use(express.json())
 dotenv.config() //mandatory to called if using ".env" file 
 
 app.post("/register", async (req, res) => {
-  const { userName, emailId, password, confirmPassword } = req.body;
-
+  const { Username, Email, Password, ConfirmPassword } = req.body;
+  console.log(req.body)
   // Check if all required fields are provided
-  if (!userName || !emailId || !password || !confirmPassword) {
+  if (!Username || !Email || !Password || !ConfirmPassword) {
     res.json({
       success:false,
       status:400,
@@ -26,12 +26,12 @@ app.post("/register", async (req, res) => {
   }
 
   // Check if the passwords match
-  if (password !== confirmPassword) {
+  if (Password !== ConfirmPassword) {
     return res.status(400).json("Passwords do not match.");
   }
 
   // Check if email already exists
-  let existEmailId = await Users.findOne({ emailId });
+  let existEmailId = await Users.findOne({ Email });
   if (existEmailId) {
     return res.status(400).json({
       success: false,
@@ -43,19 +43,19 @@ app.post("/register", async (req, res) => {
   // Hash the password using bcrypt
   try {
     // Ensure password and saltRounds are properly set
-    if (!password) {
+    if (!Password) {
       return res.status(400).json("Password is required.");
     }
 
     const saltRounds = 10; // Ensure saltRounds is a valid number
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(Password, saltRounds);
     console.log("Hashed password:", hashedPassword); // Optional: Log the hashed password for debugging
 
     // Create a new user with hashed password
     const userSaved = new Users({
-      userName,
-      emailId,
-      password: hashedPassword,
+      Username,
+      Email,
+      Password: hashedPassword,
     });
 
     // Save the user to the database
