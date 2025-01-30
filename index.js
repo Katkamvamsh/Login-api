@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 
 const Users=require('./Schema')
 const cors=require("cors")
-const port =3111
+const port =3222
 const app=express()
 const dotenv=require("dotenv") //mandatory if using ".env" file
 const middleware=require('./middlewareAuth')
@@ -13,62 +13,60 @@ app.use(cors());
 app.use(express.json())
 dotenv.config() //mandatory to called if using ".env" file 
 
-app.post("/register",async (req,res)=>{
-    const {userName,emailId,password,confirmPassword}=req.body
+app.post("/register", async (req, res) => {
+  const { userName, emailId, password, confirmPassword } = req.body;
 
-    if(!userName || !emailId || !password || !confirmPassword){
-     res.status(400).json("all fields mandatory to fill")
+  // Check if all required fields are provided
+  if (!userName || !emailId || !password || !confirmPassword) {
+    return res.status(400).json("All fields are mandatory to fill.");
+  }
+
+  // Check if the passwords match
+  if (password !== confirmPassword) {
+    return res.status(400).json("Passwords do not match.");
+  }
+
+  // Check if email already exists
+  let existEmailId = await Users.findOne({ emailId });
+  if (existEmailId) {
+    return res.status(400).json({
+      success: false,
+      status: 400,
+      message: "This emailId is already registered, try registering with a different emailId.",
+    });
+  }
+
+  // Hash the password using bcrypt
+  try {
+    // Ensure password and saltRounds are properly set
+    if (!password) {
+      return res.status(400).json("Password is required.");
     }
-      
-    let existEmailId = await Users.findOne({emailId});
- //its checking if the mailId is already registered or not 
- // "await" mandatory cuz it s working with database  to check emailId
-    if(existEmailId){
-       res.status(400).json({
-        success:false,
-        status:400,
-        message:"This emailId is already registered, try to register  with a another emailId"
-        
-       })
-    }
-  
 
-    if (password !== confirmPassword) {
-        return res.status(400).json("Both password are should be match");
-      }
-      const saltRounds = 10;
-      const hashedPassword= await bcrypt.hash(password,saltRounds)
-    //note : bcrypt.hash is convert & coded  our password  stored in db with hashing so
-      // we need to use bcrypt.compare() in "login route" to verify password same or not
-      //cuz of its stored in another format , else password are incorrect
-  console.log(hashedPassword)
+    const saltRounds = 10; // Ensure saltRounds is a valid number
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    console.log("Hashed password:", hashedPassword); // Optional: Log the hashed password for debugging
 
-   const userSaved = new Users({
-    userName,
-    emailId,
-    password:hashedPassword,
-    confirmPassword:hashedPassword// optional to write tis line
-    //confirm password is no need to write cuz its not store in db
-    // its just checks the both are same or not only, its for frontend only
-   })
-  await userSaved.save()  
-   .then(()=>{
+    // Create a new user with hashed password
+    const userSaved = new Users({
+      userName,
+      emailId,
+      password: hashedPassword,
+    });
+
+    // Save the user to the database
+    await userSaved.save();
     res.json({
-      success:true,
-      status:200,
-      message:"User is successfully registered"
-    })
-   })
-   .catch((error)=>{
-res.json('error wile saving')
-   })
-  //  try {
-  //   await userSaved.save();
-  //   res.status(201).json("User registered successfully");
-  // } catch (err) {
-  //   res.status(500).json("Server error while registering user");
-  // }
-})
+      success: true,
+      status: 200,
+      message: "User successfully registered",
+    });
+  } catch (error) {
+    console.error("Error while saving user:", error);
+    res.status(500).json("Error while registering user.");
+  }
+});
+
 
 app.post("/login", async(req,res)=>{
 
