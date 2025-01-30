@@ -17,7 +17,7 @@ app.post("/register", async (req, res) => {
   const { Username, Email, Password, ConfirmPassword } = req.body;
   console.log(req.body)
   // Check if all required fields are provided
-  if (!Username || !Email || !Password || !ConfirmPassword) {
+  if (!Username || !Email || !Password ) {
     res.json({
       success:false,
       status:400,
@@ -56,7 +56,7 @@ app.post("/register", async (req, res) => {
       Username,
       Email,
       Password: hashedPassword,
-      ConfirmPassword
+     
     });
 
     // Save the user to the database
@@ -75,9 +75,9 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async(req,res)=>{
 
-const {emailId,password}=req.body
+const {Email,Password}=req.body
  
-  if( !emailId || !password){
+  if( !Email || !Password){
     //make sure use "!" operator for both emailId & password
      //checking if user not given any inputs user will get error 
     res.send({
@@ -88,7 +88,7 @@ const {emailId,password}=req.body
    }
 
  //checking if user enter a emailId it will register are not , if not will show error
- const existUser= await Users.findOne({emailId})
+ const existUser= await Users.findOne({Email})
  if(!existUser){
  return res.send({
     success:false,
@@ -99,7 +99,7 @@ const {emailId,password}=req.body
 
  
 
-const decodePassword= await bcrypt.compare(password,existUser.password)
+const decodePassword= await bcrypt.compare(Password,existUser.Password)
 //make sure don't  use hashedPassword  in login at bcrypt.compare()
 // cuz of its already stored in db with a key password been in model
 // so bcrypt.compare(password,existUser.password) write this only

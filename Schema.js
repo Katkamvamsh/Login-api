@@ -2,17 +2,17 @@ const mongoose = require('mongoose');
 
 // Define the schema for the user
 const registeredUsersList= new mongoose.Schema({
-    userName: {
+    Username: {
         required: true,  // 'required' instead of 'require'
         type: String,
        
     },
-    emailId:{
+    Email:{
         required: true,  // 'required' instead of 'require'
         type: String,
         unique: true
     },
-    password:{
+   Password:{
       required: true,  // 'required' instead of 'require'
         type: String,  
     },
