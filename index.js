@@ -9,11 +9,7 @@ const port =3111
 const app=express()
 const dotenv=require("dotenv") //mandatory if using ".env" file
 const middleware=require('./middlewareAuth')
-app.use(cors({
-  origin: "http://localhost:5173", // Your frontend origin
-  methods: "GET, POST, PUT, DELETE, OPTIONS",
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(cors());
 app.use(express.json())
 dotenv.config() //mandatory to called if using ".env" file 
 
@@ -64,7 +60,7 @@ app.post("/register",async (req,res)=>{
     })
    })
    .catch((error)=>{
-res.json(error + 'error wile saving')
+res.json('error wile saving')
    })
   //  try {
   //   await userSaved.save();
