@@ -56,6 +56,7 @@ app.post("/register", async (req, res) => {
       Username,
       Email,
       Password: hashedPassword,
+      ConfirmPassword
     });
 
     // Save the user to the database
