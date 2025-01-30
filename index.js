@@ -17,7 +17,7 @@ app.post("/register",async (req,res)=>{
     const {userName,emailId,password,confirmPassword}=req.body
 
     if(!userName || !emailId || !password || !confirmPassword){
-     res.status(400).json("all fields to fill")
+     res.status(400).json("all fields mandatory to fill")
     }
       
     let existEmailId = await Users.findOne({emailId});
