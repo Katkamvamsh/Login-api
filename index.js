@@ -18,7 +18,7 @@ app.post("/register", async (req, res) => {
   console.log(req.body)
   // Check if all required fields are provided
   if (!Username || !Email || !Password ) {
-    res.json({
+   return res.json({
       success:false,
       status:400,
       message: "all fields are mandatory"
