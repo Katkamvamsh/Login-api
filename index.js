@@ -14,11 +14,11 @@ app.use(express.json())
 dotenv.config() //mandatory to called if using ".env" file 
 
 app.post("/register", async (req, res) => {
-  const { Username, Email, Password, ConfirmPassword } = req.body;
+  const { Username, Email, Password, ConfirmPassword, } = req.body;
   console.log(req.body)
   // Check if all required fields are provided
-  if (!Username || !Email || !Password ) {
-   return res.json({
+  if (!Username || !Email || !Password || !ConfirmPassword) {
+   res.json({
       success:false,
       status:400,
       message: "all fields are mandatory"
@@ -33,10 +33,10 @@ app.post("/register", async (req, res) => {
   // Check if email already exists
   let existEmailId = await Users.findOne({ Email });
   if (existEmailId) {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       status: 400,
-      message: "This emailId is already registered, try registering with a different emailId.",
+      message: "This emailId is already registered, try again registering with a different emailId.",
     });
   }
 
@@ -66,6 +66,7 @@ app.post("/register", async (req, res) => {
       status: 200,
       message: "User successfully registered",
     });
+    
   } catch (error) {
     console.error("Error while saving user:", error);
     res.status(500).json("Error while registering user.");
