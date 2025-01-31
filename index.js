@@ -1,78 +1,73 @@
-const express=require("express")
-const jwt=require("jsonwebtoken")
-const mongoose=require('./db')
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const mongoose = require('./db');
 const bcrypt = require('bcryptjs');
+const Users = require('./Schema');
+const cors = require("cors");
+const dotenv = require("dotenv"); // mandatory if using ".env" file
+const middleware = require('./middlewareAuth');
 
-const Users=require('./Schema')
-const cors=require("cors")
-const port =3222
-const app=express()
-const dotenv=require("dotenv") //mandatory if using ".env" file
-const middleware=require('./middlewareAuth')
+const port = 3222;
+const app = express();
+
+// Use dotenv to load environment variables
+dotenv.config();
 app.use(cors());
-app.use(express.json())
-dotenv.config() //mandatory to called if using ".env" file 
+app.use(express.json());
 
+// POST /register route
 app.post("/register", async (req, res) => {
-  const { Username, Email, Password, ConfirmPassword, } = req.body;
-  console.log(req.body)
-  // Check if all required fields are provided
-  if (!Username || !Email || !Password || !ConfirmPassword) {
-   res.json({
-      success:false,
-      status:400,
-      message: "all fields are mandatory"
-  })
-  }
-
-  // Check if the passwords match
-  if (Password !== ConfirmPassword) {
-    return res.status(400).json("Passwords do not match.");
-  }
-
-  // Check if email already exists
-  let existEmailId = await Users.findOne({ Email });
-  if (existEmailId) {
-    res.status(400).json({
-      success: false,
-      status: 400,
-      message: "This emailId is already registered, try again registering with a different emailId.",
-    });
-  }
-
-  // Hash the password using bcrypt
   try {
-    // Ensure password and saltRounds are properly set
-    if (!Password) {
-      return res.status(400).json("Password is required.");
+    const { Username, Email, Password, ConfirmPassword } = req.body;
+
+    // Check if all required fields are provided
+    if (!Username || !Email || !Password || !ConfirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are mandatory",
+      });
     }
 
-    const saltRounds = 10; // Ensure saltRounds is a valid number
-    const hashedPassword = await bcrypt.hash(Password, saltRounds);
-    console.log("Hashed password:", hashedPassword); // Optional: Log the hashed password for debugging
+    // Check if passwords match
+    if (Password !== ConfirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match.",
+      });
+    }
 
-    // Create a new user with hashed password
+    // Check if email already exists
+    let existEmailId = await Users.findOne({ Email });
+    if (existEmailId) {
+      return res.status(400).json({
+        success: false,
+        message: "This email is already registered.",
+      });
+    }
+
+    // Hash password using bcrypt
+    const hashedPassword = await bcrypt.hash(Password, 10);
+
+    // Save user data
     const userSaved = new Users({
       Username,
       Email,
       Password: hashedPassword,
-     
     });
-
-    // Save the user to the database
     await userSaved.save();
-    res.json({
+
+    res.status(200).json({
       success: true,
-      status: 200,
-      message: "User successfully registered",
+      message: "User successfully registered.",
     });
-    
   } catch (error) {
-    console.error("Error while saving user:", error);
-    res.status(500).json("Error while registering user.");
+    console.error("Error while registering user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error. Please try again later.",
+    });
   }
 });
-
 
 app.post("/login", async(req,res)=>{
 
